@@ -1,0 +1,26 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [ develop, master ]
+
+jobs:
+  pr-checks:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install node modules
+        run: npm i
+
+      - name: Compile Typescript
+        run: npm run compile-ts
+
+      - name: Run tests
+        run: npm run test

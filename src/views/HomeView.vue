@@ -24,15 +24,26 @@ DBOpenRequest.onupgradeneeded = (event: IDBVersionChangeEvent) => {
     console.log('Error loading database.');
   };
 
-  itemStore.value = db.value!.createObjectStore('items', { keyPath: 'itemsTitle' });
+  itemStore.value = db.value!.createObjectStore('items', { keyPath: 'id', autoIncrement: true });
   itemStore.value.createIndex('items', 'items', { unique: false });
-
-  console.log('Object store created');
 };
 
 const addItem = () => {
-  console.log('Item', item.value)
-  itemStore.value!.add(item.value)
+  if (!db.value) return;
+
+  const transaction = db.value.transaction(['items'], 'readwrite')
+
+  transaction.oncomplete = () => {
+    console.log('Transaction complete')
+  };
+
+  itemStore.value = transaction.objectStore('items');
+
+  const objectStoreRequest = itemStore.value.add({ value: item.value });
+
+  objectStoreRequest.onsuccess = (event) => {
+    console.log('Success object store created', objectStoreRequest.result);
+  }
 }
 </script>
 

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { getConstantValue } from "typescript";
 import {ref} from "vue";
 
 const db = ref<IDBDatabase|null>(null);
@@ -54,19 +53,33 @@ const addItem = () => {
     console.log('Success object store created', objectStoreRequest.result);
   }
 }
+
+const updateItem = (item: {id: number, value: string}) => {
+  if (!db.value) return;
+
+  const transaction = db.value.transaction(['items'], 'readwrite')
+
+  transaction.oncomplete = () => {
+    console.log('Transaction complete')
+  };
+
+  // new read write
+  itemStore.value = transaction.objectStore('items');
+
+  itemStore.value.put({value: item.value, id: item.id});
+}
+
 </script>
 
 <template>
   <main>
     <input type="text" v-model="item" placeholder="Enter something" />
     <button type="button" @click="addItem">Add Item</button>
-    <br/>
-    <template v-for="item in items" :key="item.id">
-      <div>
-        <p style="{color: white}">{{ item.value }}</p>
-        <button> edit </button>
-      </div>
-      <br/>
-    </template>
+
+    <h3>Items in Database</h3>
+    <div v-for="promisedItem in items" :key="promisedItem.id">
+      <input type="text" v-model="promisedItem.value">
+      <button @click="updateItem(promisedItem)"> update </button>
+    </div>
   </main>
 </template>

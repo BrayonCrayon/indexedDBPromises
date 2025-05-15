@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import {ref} from "vue";
+import type {Item} from "@/Types/Item.ts";
 
 const db = ref<IDBDatabase|null>(null);
-const items = ref<{id: number, value: string}[]>([])
+const items = ref<Item[]>([])
 
 const item = ref<string>('')
 const DBOpenRequest = window.indexedDB.open('promises')
@@ -19,8 +20,8 @@ DBOpenRequest.onsuccess = (event) => {
   retrieveAllItems();
 };
 
-DBOpenRequest.onupgradeneeded = (event: IDBVersionChangeEvent) => {
-  db.value = event.target!.result;
+DBOpenRequest.onupgradeneeded = () => {
+  db.value = DBOpenRequest.result;
 
   db.value!.onerror = (event) => {
     console.log('Error loading database.');
@@ -59,7 +60,7 @@ const addItem = () => {
   retrieveAllItems();
 }
 
-const updateItem = (item: {id: number, value: string}) => {
+const updateItem = (item: Item) => {
   if (!db.value) return;
 
   const transaction = db.value.transaction(['items'], 'readwrite')

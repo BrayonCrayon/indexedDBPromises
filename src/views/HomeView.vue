@@ -69,6 +69,10 @@ const updateItem = (item: {id: number, value: string}) => {
   itemStore.value.put({value: item.value, id: item.id});
 }
 
+const deleteItem = (id: number) => {
+  const transaction = db.value!.transaction(['items'], 'readwrite')
+  transaction.objectStore('items').delete(id);
+}
 </script>
 
 <template>
@@ -80,6 +84,7 @@ const updateItem = (item: {id: number, value: string}) => {
     <div v-for="promisedItem in items" :key="promisedItem.id">
       <input type="text" v-model="promisedItem.value">
       <button @click="updateItem(promisedItem)"> update </button>
+      <button @click="deleteItem(promisedItem.id)"> delete </button>
     </div>
   </main>
 </template>

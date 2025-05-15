@@ -8,6 +8,8 @@ const item = ref<string>('')
 const indexDBWrapper = new IndexDBWrapper()
 
 indexDBWrapper.open('promises')
+  .then(() => {retrieveAllItems()})
+  .catch((err) => {console.log(err)})
 
 const retrieveAllItems = () => {
   items.value = indexDBWrapper.getAll();

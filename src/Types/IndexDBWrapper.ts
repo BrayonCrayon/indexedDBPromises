@@ -4,28 +4,30 @@ export class IndexDBWrapper {
   db: IDBDatabase|null = null
 
   open(name: string) {
-    const DBOpenRequest = window.indexedDB.open(name)
+    return new Promise((resolve, reject) => {
+      const DBOpenRequest = window.indexedDB.open(name)
 
-    DBOpenRequest.onerror = () => {
-      console.log('Error opening DB')
-    };
-
-    DBOpenRequest.onsuccess = () => {
-      console.log('Success opening DB')
-
-      this.db = DBOpenRequest.result;
-    };
-
-    DBOpenRequest.onupgradeneeded = () => {
-      this.db = DBOpenRequest.result;
-
-      this.db!.onerror = () => {
-        console.log('Error loading database.');
+      DBOpenRequest.onerror = () => {
+        reject(DBOpenRequest.result)
       };
 
-      const itemStore = this.db!.createObjectStore('items', { keyPath: 'id', autoIncrement: true });
-      itemStore.createIndex('items', 'items', { unique: false });
-    };
+      DBOpenRequest.onsuccess = () => {
+        this.db = DBOpenRequest.result;
+        resolve(DBOpenRequest.result)
+      };
+
+      DBOpenRequest.onupgradeneeded = () => {
+        this.db = DBOpenRequest.result;
+        this.db!.onerror = () => {
+          reject(DBOpenRequest.result)
+        };
+        const itemStore = this.db!.createObjectStore('items', {keyPath: 'id', autoIncrement: true});
+
+        itemStore.createIndex('items', 'items', {unique: false});
+
+        resolve(DBOpenRequest.result);
+      };
+    });
   }
 
   add<T extends object>(item: T) {

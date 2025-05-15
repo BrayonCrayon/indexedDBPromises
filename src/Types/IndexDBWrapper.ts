@@ -1,3 +1,5 @@
+
+
 export class IndexDBWrapper {
   db: IDBDatabase|null = null
 
@@ -12,8 +14,6 @@ export class IndexDBWrapper {
       console.log('Success opening DB')
 
       this.db = DBOpenRequest.result;
-
-      // retrieveAllItems();
     };
 
     DBOpenRequest.onupgradeneeded = () => {
@@ -28,14 +28,10 @@ export class IndexDBWrapper {
     };
   }
 
-  add<T>(item: T) {
+  add<T extends object>(item: T) {
     if (!this.db) return;
 
     const transaction = this.db.transaction(['items'], 'readwrite')
-
-    // transaction.oncomplete = () => {
-    //   item.value = "";
-    // };
 
     const itemStore = transaction.objectStore('items');
 
@@ -44,10 +40,9 @@ export class IndexDBWrapper {
     objectStoreRequest.onerror = () => {
       console.error('Could not create the item.', objectStoreRequest.result);
     }
-    // retrieveAllItems();
   }
 
-  update<T>(item: T) {
+  update<T extends object>(item: T) {
     if (!this.db) return;
 
     const transaction = this.db.transaction(['items'], 'readwrite')
@@ -65,7 +60,7 @@ export class IndexDBWrapper {
     }
   }
 
-  delete<T>(key: T) {
+  delete(key: IDBValidKey|IDBKeyRange) {
     if (!this.db) return;
 
     const transaction = this.db.transaction(['items'], 'readwrite')
@@ -75,6 +70,20 @@ export class IndexDBWrapper {
     objectStoreRequest.onerror = () => {
       console.error('Could not delete the item.', objectStoreRequest.result);
     }
-    // retrieveAllItems();
+  }
+
+  getAll<T>(): T[] {
+    if (!this.db) return [];
+
+    const itemStore = this.db.transaction(['items']).objectStore('items');
+
+    const allItemsRequest = itemStore.getAll();
+
+    let items: T[] = []
+    allItemsRequest.onsuccess = () => {
+      items = allItemsRequest.result
+    }
+
+    return items;
   }
 }

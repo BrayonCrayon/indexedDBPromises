@@ -17,12 +17,7 @@ DBOpenRequest.onsuccess = (event) => {
 
   db.value = DBOpenRequest.result;
 
-  // get items here
-  itemStore.value = db.value.transaction(['items']).objectStore('items');
-  const allItemsRequest = itemStore.value.getAll();
-  allItemsRequest.onsuccess = (event) => {
-    items.value = allItemsRequest.result
-  }
+  retrieveAllItems();
 };
 
 DBOpenRequest.onupgradeneeded = (event: IDBVersionChangeEvent) => {
@@ -36,6 +31,16 @@ DBOpenRequest.onupgradeneeded = (event: IDBVersionChangeEvent) => {
   itemStore.value.createIndex('items', 'items', { unique: false });
 };
 
+const retrieveAllItems = () => {
+  itemStore.value = db.value!.transaction(['items']).objectStore('items');
+
+  const allItemsRequest = itemStore.value.getAll();
+
+  allItemsRequest.onsuccess = (event) => {
+    items.value = allItemsRequest.result
+  }
+}
+
 const addItem = () => {
   if (!db.value) return;
 
@@ -43,6 +48,7 @@ const addItem = () => {
 
   transaction.oncomplete = () => {
     console.log('Transaction complete')
+    item.value = "";
   };
 
   itemStore.value = transaction.objectStore('items');
@@ -52,6 +58,7 @@ const addItem = () => {
   objectStoreRequest.onsuccess = (event) => {
     console.log('Success object store created', objectStoreRequest.result);
   }
+  retrieveAllItems();
 }
 
 const updateItem = (item: {id: number, value: string}) => {
@@ -72,6 +79,7 @@ const updateItem = (item: {id: number, value: string}) => {
 const deleteItem = (id: number) => {
   const transaction = db.value!.transaction(['items'], 'readwrite')
   transaction.objectStore('items').delete(id);
+  retrieveAllItems();
 }
 </script>
 

@@ -3,7 +3,6 @@ import {ref} from "vue";
 
 const db = ref<IDBDatabase|null>(null);
 const items = ref<{id: number, value: string}[]>([])
-const itemStore = ref<IDBObjectStore>();
 
 const item = ref<string>('')
 const DBOpenRequest = window.indexedDB.open('promises')
@@ -27,14 +26,14 @@ DBOpenRequest.onupgradeneeded = (event: IDBVersionChangeEvent) => {
     console.log('Error loading database.');
   };
 
-  itemStore.value = db.value!.createObjectStore('items', { keyPath: 'id', autoIncrement: true });
-  itemStore.value.createIndex('items', 'items', { unique: false });
+  const itemStore = db.value!.createObjectStore('items', { keyPath: 'id', autoIncrement: true });
+  itemStore.createIndex('items', 'items', { unique: false });
 };
 
 const retrieveAllItems = () => {
-  itemStore.value = db.value!.transaction(['items']).objectStore('items');
+  const itemStore = db.value!.transaction(['items']).objectStore('items');
 
-  const allItemsRequest = itemStore.value.getAll();
+  const allItemsRequest = itemStore.getAll();
 
   allItemsRequest.onsuccess = (event) => {
     items.value = allItemsRequest.result
@@ -47,16 +46,15 @@ const addItem = () => {
   const transaction = db.value.transaction(['items'], 'readwrite')
 
   transaction.oncomplete = () => {
-    console.log('Transaction complete')
     item.value = "";
   };
 
-  itemStore.value = transaction.objectStore('items');
+  const itemStore = transaction.objectStore('items');
 
-  const objectStoreRequest = itemStore.value.add({ value: item.value });
+  const objectStoreRequest = itemStore.add({ value: item.value });
 
-  objectStoreRequest.onsuccess = (event) => {
-    console.log('Success object store created', objectStoreRequest.result);
+  objectStoreRequest.onerror = (event) => {
+    console.error('Could not create the item.', objectStoreRequest.result);
   }
   retrieveAllItems();
 }
@@ -71,14 +69,23 @@ const updateItem = (item: {id: number, value: string}) => {
   };
 
   // new read write
-  itemStore.value = transaction.objectStore('items');
+  const itemStore = transaction.objectStore('items');
 
-  itemStore.value.put({value: item.value, id: item.id});
+  const objectStoreRequest = itemStore.put({value: item.value, id: item.id});
+
+  objectStoreRequest.onerror = (event) => {
+    console.error('Could not update the item.', objectStoreRequest.result);
+  }
 }
 
 const deleteItem = (id: number) => {
   const transaction = db.value!.transaction(['items'], 'readwrite')
-  transaction.objectStore('items').delete(id);
+
+  const objectStoreRequest = transaction.objectStore('items').delete(id);
+
+  objectStoreRequest.onerror = (event) => {
+    console.error('Could not delete the item.', objectStoreRequest.result);
+  }
   retrieveAllItems();
 }
 </script>

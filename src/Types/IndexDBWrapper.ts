@@ -73,15 +73,24 @@ export class IndexDBWrapper {
   }
 
   delete(key: IDBValidKey|IDBKeyRange){
-    if (!this.db) return;
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const transaction = this.db.transaction(['items'], 'readwrite')
+      const transaction = this.db.transaction(['items'], 'readwrite')
 
-    const objectStoreRequest = transaction.objectStore('items').delete(key);
+      const objectStoreRequest = transaction.objectStore('items').delete(key);
 
-    objectStoreRequest.onerror = () => {
-      console.error('Could not delete the item.', objectStoreRequest.result);
-    }
+      objectStoreRequest.onsuccess = () => {
+        resolve(objectStoreRequest.result);
+      }
+
+      objectStoreRequest.onerror = () => {
+        reject('Could not delete the item.', objectStoreRequest.result);
+      }
+    })
+
   }
 
   getAll<T>(): T[] {

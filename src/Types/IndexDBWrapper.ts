@@ -29,17 +29,25 @@ export class IndexDBWrapper {
   }
 
   add<T extends object>(item: T) {
-    if (!this.db) return;
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const transaction = this.db.transaction(['items'], 'readwrite')
+      const transaction = this.db.transaction(['items'], 'readwrite')
 
-    const itemStore = transaction.objectStore('items');
+      const itemStore = transaction.objectStore('items');
 
-    const objectStoreRequest = itemStore.add({ ...item });
+      const objectStoreRequest = itemStore.add({ ...item });
 
-    objectStoreRequest.onerror = () => {
-      console.error('Could not create the item.', objectStoreRequest.result);
-    }
+      objectStoreRequest.onsuccess = () => {
+        resolve({id: objectStoreRequest.result, ...item});
+      }
+
+      objectStoreRequest.onerror = () => {
+        reject(objectStoreRequest.result);
+      }
+    });
   }
 
   update<T extends object>(item: T) {
@@ -60,7 +68,7 @@ export class IndexDBWrapper {
     }
   }
 
-  delete(key: IDBValidKey|IDBKeyRange) {
+  delete(key: IDBValidKey|IDBKeyRange){
     if (!this.db) return;
 
     const transaction = this.db.transaction(['items'], 'readwrite')

@@ -27,11 +27,14 @@ const addItem = () => {
       retrieveAllItems();
     })
     .catch((err) => {console.log(err)});
-
 }
 
 const updateItem = (item: Item) => {
   indexDBWrapper.update(item)
+    .then((updatedItemId: number) => {
+      alert(`Item under id ${updatedItemId} was updated successfully`)
+    })
+    .catch((err) => {console.log(err)});
 }
 
 const deleteItem = (id: number) => {

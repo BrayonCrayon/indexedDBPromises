@@ -21,8 +21,13 @@ const retrieveAllItems = () => {
 
 const addItem = () => {
   indexDBWrapper.add({value: item.value})
-  item.value = "";
-  retrieveAllItems();
+    .then((response: Item) => {
+      alert(`Item added successfully! Id: ${response.id}, Value: ${response.value}`)
+      item.value = "";
+      retrieveAllItems();
+    })
+    .catch((err) => {console.log(err)});
+
 }
 
 const updateItem = (item: Item) => {

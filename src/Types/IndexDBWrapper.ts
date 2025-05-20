@@ -51,21 +51,25 @@ export class IndexDBWrapper {
   }
 
   update<T extends object>(item: T) {
-    if (!this.db) return;
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const transaction = this.db.transaction(['items'], 'readwrite')
+      const transaction = this.db.transaction(['items'], 'readwrite')
 
-    transaction.oncomplete = () => {
-      console.log('Transaction complete')
-    };
+      const itemStore = transaction.objectStore('items');
 
-    const itemStore = transaction.objectStore('items');
+      const objectStoreRequest = itemStore.put({ ...item });
 
-    const objectStoreRequest = itemStore.put({ ...item });
+      objectStoreRequest.onsuccess = () => {
+        resolve(objectStoreRequest.result);
+      }
 
-    objectStoreRequest.onerror = () => {
-      console.error('Could not update the item.', objectStoreRequest.result);
-    }
+      objectStoreRequest.onerror = () => {
+        reject('Could not update the item.', objectStoreRequest.result);
+      }
+    })
   }
 
   delete(key: IDBValidKey|IDBKeyRange){

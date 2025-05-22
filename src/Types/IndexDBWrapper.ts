@@ -1,5 +1,3 @@
-
-
 export class IndexDBWrapper {
   db: IDBDatabase|null = null
 
@@ -75,17 +73,22 @@ export class IndexDBWrapper {
   }
 
   getAll<T>(): T[] {
-    if (!this.db) return [];
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const itemStore = this.db.transaction(['items']).objectStore('items');
+      const itemStore = this.db.transaction(['items']).objectStore('items');
 
-    const allItemsRequest = itemStore.getAll();
+      const allItemsRequest = itemStore.getAll();
 
-    let items: T[] = []
-    allItemsRequest.onsuccess = () => {
-      items = allItemsRequest.result
-    }
+      allItemsRequest.onsuccess = () => {
+        resolve(allItemsRequest.result);
+      }
 
-    return items;
+      allItemsRequest.onerror = () => {
+        reject(allItemsRequest.result)
+      }
+    });
   }
 }

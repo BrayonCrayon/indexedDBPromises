@@ -12,7 +12,11 @@ indexDBWrapper.open('promises')
   .catch((err) => {console.log(err)})
 
 const retrieveAllItems = () => {
-  items.value = indexDBWrapper.getAll();
+  indexDBWrapper.getAll()
+    .then((dbData: Item[]) => {
+      items.value = dbData
+    })
+    .catch((err) => {console.log(err)});
 }
 
 const addItem = () => {

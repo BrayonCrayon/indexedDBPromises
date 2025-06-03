@@ -29,47 +29,68 @@ export class IndexDBWrapper {
   }
 
   add<T extends object>(item: T) {
-    if (!this.db) return;
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const transaction = this.db.transaction(['items'], 'readwrite')
+      const transaction = this.db.transaction(['items'], 'readwrite')
 
-    const itemStore = transaction.objectStore('items');
+      const itemStore = transaction.objectStore('items');
 
-    const objectStoreRequest = itemStore.add({ ...item });
+      const objectStoreRequest = itemStore.add({ ...item });
 
-    objectStoreRequest.onerror = () => {
-      console.error('Could not create the item.', objectStoreRequest.result);
-    }
+      objectStoreRequest.onsuccess = () => {
+        resolve({id: objectStoreRequest.result, ...item});
+      }
+
+      objectStoreRequest.onerror = () => {
+        reject(objectStoreRequest.result);
+      }
+    });
   }
 
   update<T extends object>(item: T) {
-    if (!this.db) return;
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const transaction = this.db.transaction(['items'], 'readwrite')
+      const transaction = this.db.transaction(['items'], 'readwrite')
 
-    transaction.oncomplete = () => {
-      console.log('Transaction complete')
-    };
+      const itemStore = transaction.objectStore('items');
 
-    const itemStore = transaction.objectStore('items');
+      const objectStoreRequest = itemStore.put({ ...item });
 
-    const objectStoreRequest = itemStore.put({ ...item });
+      objectStoreRequest.onsuccess = () => {
+        resolve(objectStoreRequest.result);
+      }
 
-    objectStoreRequest.onerror = () => {
-      console.error('Could not update the item.', objectStoreRequest.result);
-    }
+      objectStoreRequest.onerror = () => {
+        reject('Could not update the item.', objectStoreRequest.result);
+      }
+    })
   }
 
-  delete(key: IDBValidKey|IDBKeyRange) {
-    if (!this.db) return;
+  delete(key: IDBValidKey|IDBKeyRange){
+    return new Promise((resolve, reject) => {
+      if (!this.db) {
+        reject('No db found')
+      }
 
-    const transaction = this.db.transaction(['items'], 'readwrite')
+      const transaction = this.db.transaction(['items'], 'readwrite')
 
-    const objectStoreRequest = transaction.objectStore('items').delete(key);
+      const objectStoreRequest = transaction.objectStore('items').delete(key);
 
-    objectStoreRequest.onerror = () => {
-      console.error('Could not delete the item.', objectStoreRequest.result);
-    }
+      objectStoreRequest.onsuccess = () => {
+        resolve(key);
+      }
+
+      objectStoreRequest.onerror = () => {
+        reject('Could not delete the item, with a key of: ' + key);
+      }
+    })
+
   }
 
   getAll<T>(): T[] {

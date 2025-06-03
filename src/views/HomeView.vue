@@ -21,17 +21,30 @@ const retrieveAllItems = () => {
 
 const addItem = () => {
   indexDBWrapper.add({value: item.value})
-  item.value = "";
-  retrieveAllItems();
+    .then((response: Item) => {
+      alert(`Item added successfully! Id: ${response.id}, Value: ${response.value}`)
+      item.value = "";
+      retrieveAllItems();
+    })
+    .catch((err) => {console.log(err)});
 }
 
 const updateItem = (item: Item) => {
   indexDBWrapper.update(item)
+    .then((updatedItemId: number) => {
+      alert(`Item under id ${updatedItemId} was updated successfully`)
+    })
+    .catch((err) => {console.log(err)});
 }
 
 const deleteItem = (id: number) => {
   indexDBWrapper.delete(id)
-  retrieveAllItems();
+    .then(() => {
+      console.log(id);
+      alert(`Item under id ${id} was deleted successfully`)
+      retrieveAllItems();
+    })
+    .catch((err) => {console.log(err)});
 }
 </script>
 

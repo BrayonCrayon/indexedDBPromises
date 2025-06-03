@@ -16,9 +16,6 @@ export class IndexDBWrapper {
 
       DBOpenRequest.onupgradeneeded = () => {
         this.db = DBOpenRequest.result;
-        this.db!.onerror = () => {
-          reject(DBOpenRequest.result)
-        };
         const itemStore = this.db!.createObjectStore('items', {keyPath: 'id', autoIncrement: true});
 
         itemStore.createIndex('items', 'items', {unique: false});
@@ -113,3 +110,12 @@ export class IndexDBWrapper {
     });
   }
 }
+
+export const db = (): IndexDBWrapper => {
+  return new IndexDBWrapper()
+}
+
+export default {
+  IndexDBWrapper,
+  db
+};

@@ -83,11 +83,11 @@ export class IndexDBWrapper {
       const objectStoreRequest = transaction.objectStore('items').delete(key);
 
       objectStoreRequest.onsuccess = () => {
-        resolve(objectStoreRequest.result);
+        resolve(key);
       }
 
       objectStoreRequest.onerror = () => {
-        reject('Could not delete the item.', objectStoreRequest.result);
+        reject('Could not delete the item, with a key of: ' + key);
       }
     })
 

@@ -39,9 +39,9 @@ const updateItem = (item: Item) => {
 
 const deleteItem = (id: number) => {
   indexDBWrapper.delete(id)
-    .then((deletedItemId: number) => {
-      console.log(deletedItemId);
-      alert(`Item under id ${deletedItemId} was deleted successfully`)
+    .then(() => {
+      console.log(id);
+      alert(`Item under id ${id} was deleted successfully`)
       retrieveAllItems();
     })
     .catch((err) => {console.log(err)});

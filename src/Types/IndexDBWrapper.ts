@@ -113,3 +113,13 @@ export class IndexDBWrapper {
     });
   }
 }
+
+
+export const db = (): IndexDBWrapper => {
+  return new IndexDBWrapper()
+}
+
+export default {
+  IndexDBWrapper,
+  db
+};

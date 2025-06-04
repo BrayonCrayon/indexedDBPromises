@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {ref} from "vue";
 import type {Item} from "@/Types/Item.ts";
-import {IndexDBWrapper} from "@/Types/IndexDBWrapper.ts";
+import {IndexDBWrapper, db} from "@/Types/IndexDBWrapper.ts";
 
 const items = ref<Item[]>([])
 const item = ref<string>('')
-const indexDBWrapper = new IndexDBWrapper()
-
+const indexDBWrapper = db()
+console.log("in component", indexDBWrapper)
 indexDBWrapper.open('promises')
   .then(() => {retrieveAllItems()})
   .catch((err) => {console.log(err)})

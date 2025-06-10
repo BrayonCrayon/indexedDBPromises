@@ -5,7 +5,6 @@ import {flushPromises, mount} from "@vue/test-utils";
 import HomeView from "@/views/HomeView.vue";
 import itemFactory from "@/tests/factories/itemFactory.ts";
 import Wrapper, {IndexDBWrapper} from "@/Types/IndexDBWrapper.ts";
-import type {Item} from "@/Types/Item.ts";
 
 const mockedIndexedWrapper = new IndexDBWrapper()
 
@@ -50,13 +49,11 @@ describe("HomeView", () => {
     const item = itemFactory();
     mockedIndexedWrapper.getAll.mockImplementation(() => {
       return new Promise((resolve) => {
-        console.log("populated stuff")
         resolve([item]);
       })
     })
     mockedIndexedWrapper.getAll.mockImplementationOnce(() => {
       return new Promise((resolve) => {
-        console.log("empty stuff")
         resolve([]);
       })
     })
@@ -77,5 +74,81 @@ describe("HomeView", () => {
     await flushPromises();
 
     expect(wrapper.find(`[id="${item.id}-input"]`).exists()).toBeTruthy();
+  });
+
+  it('will update an item', async ()=> {
+    const item = itemFactory();
+    mockedIndexedWrapper.getAll.mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve([item]);
+      })
+    });
+
+    const wrapper = mount(HomeView);
+
+    await flushPromises();
+
+    const itemInDom = wrapper.find(`[id="${item.id}-input"]`);
+
+    // input's  text is in itemInDom.value (for current value of the input)
+    // this itemInDom doesn't have anything on it
+    // but retrieveAll() on mount should populate the input.value from db???
+    // log of itemInDom.text() doesn't even trigger
+
+    console.log(itemInDom);
+
+    expect(itemInDom.exists()).toBeTruthy();
+    expect(itemInDom.element.value).toBe(item.value);
+
+    mockedIndexedWrapper.update.mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve('new value');
+      })
+    });
+
+    await itemInDom.setValue('new value');
+
+    const updateButton = wrapper.find('[id="update-button"]')
+    await updateButton.trigger('click');
+
+    await flushPromises();
+
+    expect(wrapper.find(`[id="${item.id}-input"]`).exists()).toBeTruthy();
+    expect(itemInDom.element.value).toBe('new value');
+  });
+
+  it('will delete an item', async ()=> {
+    const item = itemFactory();
+    mockedIndexedWrapper.getAll.mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve([]);
+      })
+    });
+    mockedIndexedWrapper.getAll.mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve([item]);
+      })
+    });
+
+    const wrapper = mount(HomeView);
+
+    await flushPromises();
+
+    const itemInDom = wrapper.find(`[id="${item.id}-input"]`);
+
+    expect(itemInDom.exists()).toBeTruthy();
+
+    mockedIndexedWrapper.delete.mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve(item.id);
+      })
+    });
+
+    const deleteButton = wrapper.find('[id="delete-button"]')
+    await deleteButton.trigger('click');
+
+    await flushPromises();
+
+    expect(wrapper.find(`[id="${item.id}-input"]`).exists()).toBeFalsy;
   });
 })

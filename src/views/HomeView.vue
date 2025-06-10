@@ -56,8 +56,8 @@ const deleteItem = (id: number) => {
     <h3>Items in Database</h3>
     <div v-for="promisedItem in items" :key="promisedItem.id">
       <input :id="`${promisedItem.id}-input`" type="text" v-model="promisedItem.value">
-      <button @click="updateItem(promisedItem)"> update </button>
-      <button @click="deleteItem(promisedItem.id)"> delete </button>
+      <button id="update-button" @click="updateItem(promisedItem)"> update </button>
+      <button id="delete-button" @click="deleteItem(promisedItem.id)"> delete </button>
     </div>
   </main>
 </template>
